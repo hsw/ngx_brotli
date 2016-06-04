@@ -77,6 +77,7 @@ static void ngx_http_brotli_cleanup(void *data);
 
 static ngx_int_t ngx_http_brotli_ok(ngx_http_request_t *r);
 static ngx_int_t ngx_http_brotli_accept_encoding(ngx_str_t *ae);
+static ngx_int_t ngx_http_brotli_user_agent(ngx_str_t *ua);
 
 static ngx_int_t ngx_http_brotli_add_variables(ngx_conf_t *cf);
 static ngx_int_t ngx_http_brotli_ratio_variable(ngx_http_request_t *r,
@@ -649,6 +650,7 @@ static ngx_int_t
 ngx_http_brotli_ok(ngx_http_request_t *r)
 {
     ngx_table_elt_t  *ae;
+    ngx_table_elt_t  *ua;
 
     if (r != r->main) {
         return NGX_DECLINED;
@@ -667,6 +669,11 @@ ngx_http_brotli_ok(ngx_http_request_t *r)
         && ngx_http_brotli_accept_encoding(&ae->value) != NGX_OK)
     {
         return NGX_DECLINED;
+    }
+
+    ua = r->headers_in.user_agent;
+    if (ua && ua->value.len && ngx_http_brotli_user_agent(&ua->value) != NGX_OK) {
+	return NGX_DECLINED;
     }
 
     r->gzip_tested = 1;
@@ -698,6 +705,18 @@ ngx_http_brotli_accept_encoding(ngx_str_t *ae)
     return NGX_DECLINED;
 }
 
+static ngx_int_t
+ngx_http_brotli_user_agent(ngx_str_t *ua)
+{
+    u_char  *p;
+
+    p = ngx_strcasestrn(ua->data, const_cast<char *>("Firefox/44"), sizeof("Firefox/44") - 2);
+    if (p != NULL) {
+        return NGX_DECLINED;
+    }
+
+    return NGX_OK;
+}
 
 static ngx_int_t
 ngx_http_brotli_add_variables(ngx_conf_t *cf)
