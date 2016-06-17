@@ -708,7 +708,9 @@ ngx_http_brotli_accept_encoding(ngx_str_t *ae)
 static ngx_int_t
 ngx_http_brotli_user_agent(ngx_str_t *ua)
 {
-    if (ngx_strlcasestrn(ua->data, ua->data + ua->len, (u_char *) "Firefox/44", 10 - 1) != NULL) {
+    if (ngx_strlcasestrn(ua->data, ua->data + ua->len, (u_char *) "Firefox/44", 10 - 1) != NULL
+    	|| ngx_strlcasestrn(ua->data, ua->data + ua->len, (u_char *) "Firefox/45", 10 - 1) != NULL) {
+
         return NGX_DECLINED;
     }
 
